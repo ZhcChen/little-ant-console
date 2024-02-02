@@ -1,62 +1,78 @@
 <template>
   <div class="container">
-    <div class="left-side">
-      <div class="panel">
-        <Banner />
-        <DataPanel />
-        <ContentChart />
-      </div>
-      <a-grid :cols="24" :col-gap="16" :row-gap="16" style="margin-top: 16px">
-        <a-grid-item
-          :span="{ xs: 24, sm: 24, md: 24, lg: 12, xl: 12, xxl: 12 }"
-        >
-          <PopularContent />
-        </a-grid-item>
-        <a-grid-item
-          :span="{ xs: 24, sm: 24, md: 24, lg: 12, xl: 12, xxl: 12 }"
-        >
-          <CategoriesPercent />
-        </a-grid-item>
-      </a-grid>
-    </div>
-    <div class="right-side">
-      <a-grid :cols="24" :row-gap="16">
-        <a-grid-item :span="24">
-          <div class="panel moduler-wrap">
-            <QuickOperation />
-            <RecentlyVisited />
+    <div style="width: 100%">
+      <a-card :bordered="false" title="状态">
+        <div class="flex-sc mgb-12">
+          <div class="mgr-8 text-lc w-40">CPU</div>
+          <div class="s-progress flex-sc">
+            <a-progress
+              :steps="100"
+              size="small"
+              :color="cpuColor"
+              :percent="Number((computerResource.cpu() / 100).toFixed(4))"
+            />
           </div>
-        </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Carousel />
-        </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Announcement />
-        </a-grid-item>
-        <a-grid-item class="panel" :span="24">
-          <Docs />
-        </a-grid-item>
-      </a-grid>
+        </div>
+        <div class="flex-sc mgb-12">
+          <div class="mgr-8 text-lc w-40">内存</div>
+          <div class="s-progress flex-sc">
+            <a-progress
+              :steps="100"
+              size="small"
+              :color="memoryColor"
+              :percent="Number((computerResource.memory() / 100).toFixed(4))"
+            />
+          </div>
+        </div>
+<!--        <div class="flex-sc mgb-12" v-for="">-->
+<!--          <div class="mgr-8 text-lc w-40">内存</div>-->
+<!--          <div class="s-progress flex-sc">-->
+<!--            <a-progress-->
+<!--                :steps="100"-->
+<!--                size="small"-->
+<!--                :color="memoryColor"-->
+<!--                :percent="Number((computerResource.memory() / 100).toFixed(4))"-->
+<!--            />-->
+<!--          </div>-->
+<!--        </div>-->
+      </a-card>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import Banner from './components/banner.vue';
-  import DataPanel from './components/data-panel.vue';
-  import ContentChart from './components/content-chart.vue';
-  import PopularContent from './components/popular-content.vue';
-  import CategoriesPercent from './components/categories-percent.vue';
-  import RecentlyVisited from './components/recently-visited.vue';
-  import QuickOperation from './components/quick-operation.vue';
-  import Announcement from './components/announcement.vue';
-  import Carousel from './components/carousel.vue';
-  import Docs from './components/docs.vue';
+  import useComputerResourceStore from '@/store/modules/computer-resource';
+  import { mapState } from 'pinia';
+  import { computed } from 'vue';
+
+  const computerResource = computed(() =>
+    mapState(useComputerResourceStore, ['cpu', 'memory'])
+  );
+
+  const cpuColor = computed(() => {
+    if (computerResource.value.cpu() > 80) {
+      return 'rgb(var(--red-6))';
+    }
+    if (computerResource.value.cpu() > 60) {
+      return 'rgb(var(--orange-6))';
+    }
+    return 'rgb(var(--green-6))';
+  });
+
+  const memoryColor = computed(() => {
+    if (computerResource.value.memory() > 80) {
+      return 'rgb(var(--red-6))';
+    }
+    if (computerResource.value.memory() > 60) {
+      return 'rgb(var(--orange-6))';
+    }
+    return 'rgb(var(--green-6))';
+  });
 </script>
 
 <script lang="ts">
   export default {
-    name: 'Dashboard', // If you want the include property of keep-alive to take effect, you must name the component
+    name: 'Dashboard',
   };
 </script>
 
@@ -64,8 +80,15 @@
   .container {
     background-color: var(--color-fill-2);
     padding: 16px 20px;
-    padding-bottom: 0;
     display: flex;
+
+    .s-progress :deep(.arco-progress-steps) {
+      height: 18px !important;
+    }
+  }
+
+  .container :deep(.arco-card) {
+    border-radius: 8px !important;
   }
 
   .left-side {
